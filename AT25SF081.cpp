@@ -20,11 +20,16 @@
 #define OP_READ_MANUFACTURER_AND_DEVICE_ID (0x9f)
 #define OP_READ_DEVICE_ID (0x90)
 
+#define MANUFACTURER_ID (0x1f)
+#define DEVICE_ID_PART_1 (0x85)
+#define DEVICE_ID_PART_2 (0x01)
+#define DEVICE_CODE (0x13)
+#define STATUS_REGISTER_WEL_MASK (1U << 1)
+
 
 #define MAX_FREQUENCY (104000000)
-#define RDHF_FREQUENCY (70000000)
 
-AT25SF081::AT25SF081(int peripheral_id) :
+AT25SF081::AT25SF081() :
         should_stop_(false),
         status_register1_(0),
         status_register2_(0) {
@@ -46,22 +51,18 @@ AT25SF081::AT25SF081(int peripheral_id) :
     };
 
     spi_slave_ = CreateSpiSlave(spi_config);
-//    memory_ = CreateMemory(kMemorySize_, 0xff);
     MemReset();
 }
 
 void AT25SF081::Main() {
     while (!should_stop_) {
         uint8_t opcode = 0;
-//    spi_slave_.SetMaxFrequency(MAX_FREQUENCY);
         if (spi_slave_->Read(&opcode, 1) == 0) {
-//        std::cout << "[SLAVE] ExecSingleOp READ was false => return false" << std::endl;
             continue;
         }
 
         switch (opcode) {
             case (OP_READ_ARRAY_0B): {
-//            std::cout << "[SLAVE] ExecSingleOp OP_READ_ARRAY_0B" << std::endl;
                 ReadArray(true);
                 break;
             }
@@ -72,7 +73,6 @@ void AT25SF081::Main() {
             }
 
             case (OP_BYTE_OR_PAGE_PROGRAM): {
-//            std::cout << "[SLAVE] ExecSingleOp OP_BYTE_OR_PAGE_PROGRAM" << std::endl;
                 ByteOrPageProgram();
                 break;
             }
@@ -139,8 +139,11 @@ void AT25SF081::Main() {
     }
 }
 
+void AT25SF081::Stop() {
+    should_stop_ = true;
+}
+
 void AT25SF081::ReadArray(bool with_dummy_byte) {
-//    spi_slave_.SetMaxFrequency(RDHF_FREQUENCY);
     int address = ReadAddress();
     if (address < 0) return;
 
@@ -155,7 +158,7 @@ void AT25SF081::ReadArray(bool with_dummy_byte) {
         if (length == 0) {
             return;
         }
-        address = (address + 1) % (int) kMemorySize_;
+        address = (address + 1) % (int) MEMORY_SIZE;
         done = !spi_slave_->IsSsActive();
     }
 }
@@ -183,15 +186,12 @@ void AT25SF081::ByteOrPageProgram() {
 }
 
 int AT25SF081::ReadAddress() {
-//    std::cout << "[SLAVE] ReadAddress" << std::endl;
     uint8_t data[3];
     if (spi_slave_->Read(data, 3) != 3 || !spi_slave_->IsSsActive()) {
-//        std::cout << "[SLAVE] ReadAddress return -1" << std::endl;
         return -1;
     }
 
-//    std::cout << "[SLAVE] ReadAddress return address" << std::endl;
-    return ((data[0] << 16) | (data[1] << 8) | data[2]) % (int) kMemorySize_;
+    return ((data[0] << 16) | (data[1] << 8) | data[2]) % (int) MEMORY_SIZE;
 }
 
 size_t AT25SF081::ReadDummyBytes(size_t num) {
@@ -201,14 +201,14 @@ size_t AT25SF081::ReadDummyBytes(size_t num) {
 
 void AT25SF081::SetWel(bool enable) {
     if (enable) {
-        status_register1_ |= kStatusRegisterBitWelMask_;
+        status_register1_ |= STATUS_REGISTER_WEL_MASK;
     } else {
-        status_register1_ &= ~kStatusRegisterBitWelMask_;
+        status_register1_ &= ~STATUS_REGISTER_WEL_MASK;
     }
 }
 
 bool AT25SF081::WelStatus() {
-    return (status_register1_ & kStatusRegisterBitWelMask_) != 0;
+    return (status_register1_ & STATUS_REGISTER_WEL_MASK) != 0;
 }
 
 void AT25SF081::BlockErase(size_t block_size) {
@@ -237,7 +237,7 @@ void AT25SF081::ChipErase() {
 }
 
 void AT25SF081::MemReset() {
-    memset(memory_, 0xff, kMemorySize_);
+    memset(memory_, 0xff, MEMORY_SIZE);
 }
 
 void AT25SF081::WriteEnable() {
@@ -269,13 +269,13 @@ void AT25SF081::ReadStatusRegister(AT25SF081::StatusRegisterByte byte) {
 }
 
 void AT25SF081::ReadManufacturerAndDeviceId() {
-    static uint8_t response[3] = {kManufacturerId_, kDeviceIdPart1_, kDeviceIdPart2_};
+    static uint8_t response[3] = {MANUFACTURER_ID, DEVICE_ID_PART_1, DEVICE_ID_PART_2};
     spi_slave_->Write(response, sizeof(response));
     IgnoreUntilSsInactive();
 }
 
 void AT25SF081::ReadDeviceId() {
-    static uint8_t response[2] = {kManufacturerId_, kDeviceCode_};
+    static uint8_t response[2] = {MANUFACTURER_ID, DEVICE_CODE};
     int i = 0;
     ReadDummyBytes(3);
     while (spi_slave_->IsSsActive()) {
@@ -283,4 +283,3 @@ void AT25SF081::ReadDeviceId() {
         i = (i + 1) % 2;
     }
 }
-

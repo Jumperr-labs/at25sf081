@@ -1,14 +1,13 @@
 #pragma once
 #include "ModelingFramework.h"
 
+#define MEMORY_SIZE (0x100000)
+
 class AT25SF081 : public ExternalPeripheral {
   public:
-    explicit AT25SF081(int peripheral_id);
-    AT25SF081() = default;
+    AT25SF081();
     void Main() override;
-    void Stop() override {
-        should_stop_ = true;
-    };
+    void Stop() override;
 
   private:
     enum BlockSize {
@@ -38,22 +37,15 @@ class AT25SF081 : public ExternalPeripheral {
     void ReadManufacturerAndDeviceId();
     void ReadDeviceId();
 
-    iSpiSlave* spi_slave_ {};
-    uint8_t memory_[0x100000] {};
+    iSpiSlaveV1* spi_slave_ {};
+    uint8_t memory_[MEMORY_SIZE] {};
     int wp_pin_number_ {};
     int hold_pin_number_ {};
     bool should_stop_;
     uint8_t status_register1_ {};
     uint8_t status_register2_ {};
-
-    const size_t kMemorySize_ {0x100000};
-    const uint8_t kManufacturerId_ {0x1f};
-    const uint8_t kDeviceIdPart1_ {0x85};
-    const uint8_t kDeviceIdPart2_ {0x01};
-    const uint8_t kDeviceCode_ {0x13};
-    const uint8_t kStatusRegisterBitWelMask_ {1U << 1};
 };
 
-extern "C" ExternalPeripheral *PeripheralMaker(int peripheral_id) {
-    return new AT25SF081(peripheral_id);
+extern "C" ExternalPeripheral *PeripheralFactory() {
+    return new AT25SF081();
 }

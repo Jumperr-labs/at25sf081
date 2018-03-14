@@ -8,6 +8,8 @@ iSpiSlaveV1* CreateSpiSlave(SpiSlaveConfig &spi_config);
 
 bool GetPinLevel(int pin_number);
 
+void SetPinLevel(int pin_number, bool pin_level);
+
 class ExternalPeripheral {
   public:
     virtual void Main() = 0;

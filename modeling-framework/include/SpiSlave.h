@@ -14,8 +14,16 @@ struct SpiSlaveConfig {
 
 class iSpiSlaveV1 {
   public:
+    /* Read:
+     * Wait until ss is active.
+     * Run until ss is deactivated or all bytes are received.
+     * Return num bytes received. */
     virtual size_t Read(uint8_t* buffer, size_t num_bytes_to_read) = 0;
+
+    /* Write */
     virtual size_t Write(const uint8_t* buffer, size_t num_bytes_to_write) = 0;
+
+    /* IsSsActive */
     virtual bool IsSsActive() = 0;
 };
 

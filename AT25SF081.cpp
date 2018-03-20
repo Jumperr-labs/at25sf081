@@ -57,7 +57,7 @@ AT25SF081::AT25SF081() :
 void AT25SF081::Main() {
     while (!should_stop_) {
         uint8_t opcode = 0;
-        if (spi_slave_->Read(&opcode, 1) == 0) {
+        if (spi_slave_->Transmit(&opcode, nullptr, 1) == 0) {
             continue;
         }
 
@@ -153,8 +153,7 @@ void AT25SF081::ReadArray(bool with_dummy_byte) {
 
     bool done = false;
     while (!done) {
-        uint8_t value = memory_[address];
-        size_t length = spi_slave_->Write(&value, 1);
+        size_t length = spi_slave_->Transmit(nullptr, &memory_[address], MEMORY_SIZE - address);
         if (length == 0) {
             return;
         }
@@ -173,7 +172,7 @@ void AT25SF081::ByteOrPageProgram() {
     bool done = false;
     while (!done) {
         uint8_t byte = 0;
-        size_t length = spi_slave_->Read(&byte, 1);
+        size_t length = spi_slave_->Transmit(&byte, nullptr, 1);
         if (length == 0) {
             return;
         }
@@ -187,7 +186,7 @@ void AT25SF081::ByteOrPageProgram() {
 
 int AT25SF081::ReadAddress() {
     uint8_t data[3];
-    if (spi_slave_->Read(data, 3) != 3 || !spi_slave_->IsSsActive()) {
+    if (spi_slave_->Transmit(data, nullptr, 3) != 3 || !spi_slave_->IsSsActive()) {
         return -1;
     }
 
@@ -196,7 +195,7 @@ int AT25SF081::ReadAddress() {
 
 size_t AT25SF081::ReadDummyBytes(size_t num) {
     uint8_t data[num];
-    return spi_slave_->Read(data, num);
+    return spi_slave_->Transmit(data, nullptr, num);
 }
 
 void AT25SF081::SetWel(bool enable) {
@@ -264,13 +263,13 @@ void AT25SF081::ReadStatusRegister(AT25SF081::StatusRegisterByte byte) {
     uint8_t data = byte == STATUS_REGISTER_BYTE_1 ? status_register1_ : status_register2_;
 
     while (spi_slave_->IsSsActive()) {
-        spi_slave_->Write(&data, 1);
+        spi_slave_->Transmit(nullptr, &data, 1);
     }
 }
 
 void AT25SF081::ReadManufacturerAndDeviceId() {
     static uint8_t response[3] = {MANUFACTURER_ID, DEVICE_ID_PART_1, DEVICE_ID_PART_2};
-    spi_slave_->Write(response, sizeof(response));
+    spi_slave_->Transmit(nullptr, response, sizeof(response));
     IgnoreUntilSsInactive();
 }
 
@@ -279,7 +278,7 @@ void AT25SF081::ReadDeviceId() {
     int i = 0;
     ReadDummyBytes(3);
     while (spi_slave_->IsSsActive()) {
-        spi_slave_->Write(&response[i], 1);
+        spi_slave_->Transmit(nullptr, &response[i], 1);
         i = (i + 1) % 2;
     }
 }

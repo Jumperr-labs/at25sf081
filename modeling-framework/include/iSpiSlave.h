@@ -19,14 +19,4 @@ class iSpiSlaveV1 {
     virtual void Detach() = 0;
 };
 
-//class iSpiSlaveV2 : public iSpiSlaveV1 {
-//    virtual void SetConfig(SpiSlaveConfig spi_config) = 0;
-//    virtual void SetSupportedSpiModes(int spi_mode) = 0;
-//    virtual void SetSsPin(int pin_number) = 0;
-//    virtual void SetSclkPin(int pin_number) = 0;
-//    virtual void SetMosiPin(int pin_number) = 0;
-//    virtual void SetMisoPin(int pin_number) = 0;
-//    virtual void SetBitOrder(BitOrder bit_order) = 0;
-//    virtual void SetMaxFrequency(unsigned int max_frequency) = 0;
-//};
-
+typedef iSpiSlaveV1 iSpiSlave;

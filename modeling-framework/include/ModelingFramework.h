@@ -4,7 +4,7 @@
 #include "iSpiSlave.h"
 
 int GetPinNumber(const std::string &pin_name);
-iSpiSlaveV1* CreateSpiSlave(SpiSlaveConfig &spi_config);
+iSpiSlave* CreateSpiSlave(SpiSlaveConfig &spi_config);
 
 bool GetPinLevel(int pin_number);
 bool GetPinLevel(const std::string &pin_name);

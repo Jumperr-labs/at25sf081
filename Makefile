@@ -1,16 +1,21 @@
 CC=g++
 RM=rm
 
+peripheral_name = AT25SF081
+
+CFLAGS = -g -ggdb -std=c++11 -Werror -Wall -Wfatal-errors -Wno-shift-count-overflow -Weffc++ -Wno-non-virtual-dtor -Wno-strict-aliasing -Wno-unused-private-field -O3 -pthread -lutil
+
 $(shell mkdir -p _build)
 
-CFLAGS= -std=c++11 -Werror -Wall -Wfatal-errors -Wno-shift-count-overflow -Weffc++ -Wno-non-virtual-dtor -Wno-strict-aliasing -Wno-unused-private-field -O3 -pthread -lutil
+all: _build/$(peripheral_name).so
 
-all: _build/AT25SF081.so
-
-_build/AT25SF081.o: AT25SF081.cpp
+_build/$(peripheral_name).o: $(peripheral_name).cpp
 	$(CC) -fPIC -c -o $@ $^ $(CFLAGS) -I./include -I./modeling-framework/include
 
-_build/AT25SF081.so: _build/AT25SF081.o modeling-framework/obj/ModelingFramework.o
+_build/ModelingFramework.o: modeling-framework/src/ModelingFramework.cpp
+	$(CC) -fPIC -c -o $@ $^ $(CFLAGS) -I./modeling-framework/include
+
+_build/$(peripheral_name).so: _build/$(peripheral_name).o _build/ModelingFramework.o
 	$(CC) -shared -o $@ $^
 
 .PHONY: clean

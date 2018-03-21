@@ -3,7 +3,7 @@ RM=rm
 
 peripheral_name = AT25SF081
 
-CFLAGS = -g -ggdb -std=c++11 -Werror -Wall -Wfatal-errors -Wno-shift-count-overflow -Weffc++ -Wno-non-virtual-dtor -Wno-strict-aliasing -Wno-unused-private-field -O3 -pthread -lutil
+CFLAGS = -g -ggdb -std=c++11 -Werror -Wall -Wfatal-errors -Wno-shift-count-overflow -Weffc++ -Wno-non-virtual-dtor -Wno-strict-aliasing -Wno-unused-private-field -O3
 
 $(shell mkdir -p _build)
 

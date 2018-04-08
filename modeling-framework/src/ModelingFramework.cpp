@@ -1,11 +1,15 @@
 #include "ModelingFramework.h"
 #include <cassert>
 #include <utility>
+#include <map>
 #include "iJemuInterface.h"
+#include <iostream>
 
 iJemuInterface *jemu_interface_ = nullptr;
 
-extern "C" void InitJemuInterface(iJemuInterface *jemu_interface) {
+std::map<int, callback_t> callbacks_map_;
+
+DLL_EXPORT void InitJemuInterface(iJemuInterface *jemu_interface) {
     jemu_interface_ = jemu_interface;
 }
 
@@ -66,9 +70,17 @@ double GetCachedValueFromDataGenerator(std::string name) {
     return jemu_interface_->GetCachedValueFromDataGenerator(name.c_str());
 }
 
+void TimedCallback (int id) {
+    assert(callbacks_map_.find(id) != callbacks_map_.end());
+    callbacks_map_[id]();
+}
+
 int AddTimedCallback(uint64_t ns, const callback_t &callback,  bool run_once) {
     assert(jemu_interface_);
-    return jemu_interface_->AddTimedCallback(ns, callback, run_once);
+    void (*internal_callback)(int id) = &TimedCallback;
+    int id = jemu_interface_->AddTimedCallback(ns, internal_callback, run_once);
+    callbacks_map_[id] = callback;
+    return id;
 }
 
 void CancelTimedCallback(int id) {

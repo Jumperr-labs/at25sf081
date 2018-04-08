@@ -3,6 +3,13 @@
 #include <functional>
 #include "iSpiSlave.h"
 
+
+#ifdef _WINDOWS
+    #define DLL_EXPORT extern "C" __declspec(dllexport)
+#else
+    #define DLL_EXPORT extern "C"
+#endif
+
 int GetPinNumber(const std::string &pin_name);
 iSpiSlave* CreateSpiSlave(SpiSlaveConfig &spi_config);
 

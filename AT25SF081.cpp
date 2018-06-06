@@ -133,6 +133,7 @@ void AT25SF081::Main() {
             }
 
             default: {
+                std::cerr << "AT25SF081: [Warning] Unsupported opcode 0x" << std::hex << (int) opcode << std::dec << std::endl;
                 throw std::logic_error("AT25SF081: Unsupported opcode " + std::to_string(opcode));
             }
         }

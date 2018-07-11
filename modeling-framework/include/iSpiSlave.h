@@ -19,4 +19,9 @@ class iSpiSlaveV1 {
     virtual void Detach() = 0;
 };
 
-typedef iSpiSlaveV1 iSpiSlave;
+class iSpiSlaveV2: public iSpiSlaveV1 {
+  public:
+     virtual bool WaitForMasterTransmit() = 0;
+};
+
+typedef iSpiSlaveV2 iSpiSlave;
